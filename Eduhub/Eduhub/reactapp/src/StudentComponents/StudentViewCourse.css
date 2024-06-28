@@ -1,0 +1,112 @@
+#enrollmentHomeBody {
+    padding: 20px;
+    background-color: #ffffff;
+    height: 500px;
+    width: 90%;
+    margin: 20px auto;
+  }
+
+
+
+  .material-popup {
+    position: fixed;
+    width: 60%;
+    height: 60%;
+    top: 20%;
+    left: 20%;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    overflow: auto;
+    z-index: 1000;
+  }
+
+.enroll-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    background-color: #f2f2f2; 
+    border: 1px solid black;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    text-align: center;
+    z-index: 2; /* Above the overlay */
+    transform: translate(-50%, -50%); /* Add this line */
+}
+
+.enroll-popup p {
+    margin: 0;
+    padding: 40px;
+}
+
+.enroll-popup button {
+    /* background-color: #ff6961; Red color, you can choose your own */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+.enroll-popup button:hover {
+    background-color: #125dad; /* A slightly darker shade of red */
+}
+
+.enroll-popup button:last-child {
+    background-color: #ccc; /* Gray color for Cancel button */
+}
+
+.enroll-popup button:last-child:hover {
+    background-color: #999; /* A slightly darker shade of gray for Cancel button on hover */
+}
+  
+  .close-btn {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  
+  .main-material {
+    margin-top: 20px;
+  }
+  
+  .main-material h2 {
+    margin-bottom: 20px;
+  }
+  
+  .main-material h4 {
+    margin-bottom: 10px;
+  }
+  
+  .main-material p {
+    margin-bottom: 10px;
+  }
+  
+  .main-material img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .main-material button {
+    margin-right: 10px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .main-material button:hover {
+    background-color: #0056b3;
+  }
+
+.blur {
+    filter: blur(5px);
+    pointer-events: none;
+}
