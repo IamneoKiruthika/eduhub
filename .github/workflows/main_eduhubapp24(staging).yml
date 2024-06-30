@@ -1,57 +1,62 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.Net Core app to Azure Web App - eduhubapp24
+name: Deploy to Azure App Service
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: windows-latest
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '8.x'
-          include-prerelease: true
+    # Build and Deploy React App
+    - name: Set up Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '14'
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+    - name: Install dependencies for React app
+      working-directory: Eduhub/Eduhub/reactapp
+      run: npm install
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+    - name: Build React app
+      working-directory: Eduhub/Eduhub/reactapp
+      run: npm run build
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v3
-        with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+    - name: Deploy React app to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'eduhubapp24'
+        slot-name: 'staging'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: Eduhub/Eduhub/reactapp/build
 
-  deploy:
-    runs-on: windows-latest
-    needs: build
-    environment:
-      name: 'staging'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v3
-        with:
-          name: .net-app
-      
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'eduhubapp24'
-          slot-name: 'staging'
-          package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D820216428824FF38CA18EB128D66E91 }}
+    # Build and Deploy .NET App
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.x'
+
+    - name: Restore .NET dependencies
+      working-directory: Eduhub/Eduhub/dotnetapp
+      run: dotnet restore
+
+    - name: Build .NET app
+      working-directory: Eduhub/Eduhub/dotnetapp
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Publish .NET app
+      working-directory: Eduhub/Eduhub/dotnetapp
+      run: dotnet publish -c Release -o ${{ github.workspace }}/publish --no-restore
+
+    - name: Deploy .NET app to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'eduhubapp24'
+        slot-name: 'staging'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: ${{ github.workspace }}/publish
