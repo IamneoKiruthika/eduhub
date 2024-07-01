@@ -22,20 +22,20 @@ jobs:
     # Install NPM dependencies for React app
     - name: Install NPM dependencies
       run: |
-        cd reactapp
+        cd Eduhub/Eduhub/reactapp
         npm install
 
     # Build the React app
     - name: Build React app
       run: |
-        cd reactapp
+        cd Eduhub/Eduhub/reactapp
         npm run build
 
     # Copy React build output to .NET project wwwroot
     - name: Copy React build to wwwroot
       run: |
-        mkdir -p dotnetapp/wwwroot
-        cp -r reactapp/build/* dotnetapp/wwwroot/
+        mkdir -p Eduhub/Eduhub/dotnetapp/wwwroot
+        cp -r Eduhub/Eduhub/reactapp/build/* Eduhub/Eduhub/dotnetapp/wwwroot/
 
     # Set up .NET SDK
     - name: Set up .NET
@@ -45,15 +45,21 @@ jobs:
 
     # Restore .NET dependencies
     - name: Restore .NET dependencies
-      run: dotnet restore dotnetapp
+      run: |
+        cd Eduhub/Eduhub/dotnetapp
+        dotnet restore
 
     # Build .NET project
     - name: Build .NET project
-      run: dotnet build dotnetapp --configuration Release
+      run: |
+        cd Eduhub/Eduhub/dotnetapp
+        dotnet build --configuration Release
 
     # Publish .NET project
     - name: Publish .NET project
-      run: dotnet publish dotnetapp --configuration Release --output ./publish
+      run: |
+        cd Eduhub/Eduhub/dotnetapp
+        dotnet publish --configuration Release --output $(pwd)/publish
 
     # Deploy to Azure App Service
     - name: Azure Web App Deploy
@@ -62,4 +68,4 @@ jobs:
         app-name: 'eduhubapp24'
         slot-name: 'production'
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: './publish'
+        package: 'Eduhub/Eduhub/dotnetapp/publish'
