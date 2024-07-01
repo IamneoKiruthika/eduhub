@@ -18,13 +18,15 @@ jobs:
         with:
           dotnet-version: '6.x'  # Replace with your target .NET version
 
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
+      - name: Change directory to project folder
+        working-directory: Eduhub/Eduhub/dotnetapp  # Adjust to the path where your .csproj file is located
+        run: |
+          ls  # Optional: Verify directory contents
+          dotnet restore
+          dotnet build --configuration Release --no-restore
 
       - name: Publish
+        working-directory: Eduhub/Eduhub/dotnetapp  # Same directory as above
         run: dotnet publish -c Release -o ${{ github.workspace }}/publish
 
       - name: Deploy to Azure Web App
