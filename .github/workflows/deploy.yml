@@ -10,45 +10,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout code
-    - name: Checkout code
-      uses: actions/checkout@v2
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    # Step 2: Set up .NET SDK
-    - name: Set up .NET
-      uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: '6.x'  # specify the .NET version to use .NET 6.x
+      # Step 2: Set up .NET SDK
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.x'  # specify the .NET version to use .NET 6.x
 
-    # Step 3: Restore .NET dependencies
-    - name: Restore .NET dependencies
-      run: |
-        cd Eduhub/Eduhub/dotnetapp
-        dotnet restore
+      # Step 3: Restore .NET dependencies
+      - name: Restore .NET dependencies
+        run: |
+          cd Eduhub/Eduhub/dotnetapp
+          dotnet restore
 
-    # Step 4: Build .NET project
-    - name: Build .NET project
-      run: |
-        cd Eduhub/Eduhub/dotnetapp
-        dotnet build --configuration Release
+      # Step 4: Build .NET project
+      - name: Build .NET project
+        run: |
+          cd Eduhub/Eduhub/dotnetapp
+          dotnet build --configuration Release
 
-    # Step 5: Publish .NET project
-    - name: Publish .NET project
-      run: |
-        cd Eduhub/Eduhub/dotnetapp
-        dotnet publish --configuration Release --output $(pwd)/publish
+      # Step 5: Publish .NET project
+      - name: Publish .NET project
+        run: |
+          cd Eduhub/Eduhub/dotnetapp
+          dotnet publish --configuration Release --output $(pwd)/publish
 
-    # Step 6: Log in to Azure
-    - name: Log in to Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # Step 6: Log in to Azure
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # Step 7: Deploy to Azure App Service
-    - name: Azure Web App Deploy
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: 'eduhubapp24'  # Replace with your .NET app service name
-        slot-name: 'staging'
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET }}
-        package: 'Eduhub/Eduhub/dotnetapp/publish'
+      # Step 7: Deploy to Azure App Service
+      - name: Azure Web App Deploy
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'eduhubapp24'  # Replace with your .NET app service name
+          slot-name: 'staging'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET }}
+          package: 'Eduhub/Eduhub/dotnetapp/publish'
+
+env:
+  CLIENT_ID: ${{ secrets.CLIENT_ID }}
+  CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+  TENANT_ID: ${{ secrets.TENANT_ID }}
+  SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
