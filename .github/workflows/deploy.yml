@@ -1,9 +1,9 @@
-name: Deploy to Azure App Service
+name: Build and Deploy to Azure App Service
 
 on:
   push:
     branches:
-      - main
+      - main  # or your default branch
 
 jobs:
   build-and-deploy:
@@ -13,50 +13,53 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # Build and Deploy React App
+    # Install Node.js
     - name: Set up Node.js
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v2
       with:
-        node-version: '14'
+        node-version: '14.x'  # specify the Node.js version
 
-    - name: Install dependencies for React app
-      working-directory: Eduhub/eduhub/reactapp
-      run: npm install
+    # Install NPM dependencies for React app
+    - name: Install NPM dependencies
+      run: |
+        cd reactapp
+        npm install
 
+    # Build the React app
     - name: Build React app
-      working-directory: Eduhub/eduhub/reactapp
-      run: npm run build
+      run: |
+        cd reactapp
+        npm run build
 
-    - name: Deploy React app to Azure Web App
-      uses: azure/webapps-deploy@v2
+    # Copy React build output to .NET project wwwroot
+    - name: Copy React build to wwwroot
+      run: |
+        mkdir -p dotnetapp/wwwroot
+        cp -r reactapp/build/* dotnetapp/wwwroot/
+
+    # Set up .NET SDK
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v2
       with:
-        app-name: 'eduhubapp24'
-        slot-name: 'staging'
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: Eduhub/eduhub/reactapp/build
+        dotnet-version: '5.x'  # specify the .NET version if applicable
 
-    # Build and Deploy .NET App
-    - name: Set up .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '5.0.x'
-
+    # Restore .NET dependencies
     - name: Restore .NET dependencies
-      working-directory: Eduhub/eduhub/dotnetapp
-      run: dotnet restore
+      run: dotnet restore dotnetapp
 
-    - name: Build .NET app
-      working-directory: Eduhub/eduhub/dotnetapp
-      run: dotnet build --configuration Release --no-restore
+    # Build .NET project
+    - name: Build .NET project
+      run: dotnet build dotnetapp --configuration Release
 
-    - name: Publish .NET app
-      working-directory: Eduhub/eduhub/dotnetapp
-      run: dotnet publish -c Release -o ${{ github.workspace }}/publish --no-restore
+    # Publish .NET project
+    - name: Publish .NET project
+      run: dotnet publish dotnetapp --configuration Release --output ./publish
 
-    - name: Deploy .NET app to Azure Web App
+    # Deploy to Azure App Service
+    - name: Azure Web App Deploy
       uses: azure/webapps-deploy@v2
       with:
         app-name: 'eduhubapp24'
-        slot-name: 'staging'
+        slot-name: 'production'
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: ${{ github.workspace }}/publish
+        package: './publish'
