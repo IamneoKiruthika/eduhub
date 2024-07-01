@@ -38,11 +38,17 @@ jobs:
         cd Eduhub/Eduhub/dotnetapp
         dotnet publish --configuration Release --output $(pwd)/publish
 
-    # Step 6: Deploy to Azure App Service
+    # Step 6: Log in to Azure
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    # Step 7: Deploy to Azure App Service
     - name: Azure Web App Deploy
       uses: azure/webapps-deploy@v2
       with:
-        app-name: 'eduhubapp-dotnet'  # Replace with your .NET app service name
-        slot-name: 'production'
+        app-name: 'eduhubapp24'  # Replace with your .NET app service name
+        slot-name: 'staging'
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET }}
         package: 'Eduhub/Eduhub/dotnetapp/publish'
