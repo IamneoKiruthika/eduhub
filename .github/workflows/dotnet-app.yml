@@ -1,0 +1,48 @@
+name: Build and Deploy .NET App to Azure App Service
+
+on:
+  push:
+    branches:
+      - main  # or your default branch
+
+jobs:
+  build-and-deploy-dotnet:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout code
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Step 2: Set up .NET SDK
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '6.x'  # specify the .NET version to use .NET 6.x
+
+    # Step 3: Restore .NET dependencies
+    - name: Restore .NET dependencies
+      run: |
+        cd Eduhub/Eduhub/dotnetapp
+        dotnet restore
+
+    # Step 4: Build .NET project
+    - name: Build .NET project
+      run: |
+        cd Eduhub/Eduhub/dotnetapp
+        dotnet build --configuration Release
+
+    # Step 5: Publish .NET project
+    - name: Publish .NET project
+      run: |
+        cd Eduhub/Eduhub/dotnetapp
+        dotnet publish --configuration Release --output $(pwd)/publish
+
+    # Step 6: Deploy to Azure App Service
+    - name: Azure Web App Deploy
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'eduhubapp24'  # Replace with your .NET app service name
+        slot-name: 'staging'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET }}
+        package: 'Eduhub/Eduhub/dotnetapp/publish'
