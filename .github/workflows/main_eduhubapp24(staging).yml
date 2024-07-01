@@ -25,7 +25,7 @@ jobs:
 
     - name: Build React app
       working-directory: Eduhub/Eduhub/reactapp
-      run: npm run build
+      run: CI=false npm run build
 
     - name: Deploy React app to Azure Web App
       uses: azure/webapps-deploy@v2
