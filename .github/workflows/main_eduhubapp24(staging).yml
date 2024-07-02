@@ -1,45 +1,63 @@
-name: Publish 🚀
+name: Build and deploy ASP.Net Core app to Azure Web App - eduhubapp24
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
-
-env:
-  AZURE_WEBAPP_NAME: eduhubapp24
-  AZURE_WEBAPP_PACKAGE_PATH: "./publish"
+  workflow_dispatch:
 
 jobs:
-  publish:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.x'
+          include-prerelease: true
+
+      - name: Restore dependencies
+        run: |
+          cd Eduhub/Eduhub/dotnetapp  # Adjust this path to your project directory
+          dotnet restore
+
+      - name: Build with dotnet
+        run: |
+          cd Eduhub/Eduhub/dotnetapp  # Adjust this path to your project directory
+          dotnet build --configuration Release
+
+      - name: dotnet publish
+        run: |
+          cd Eduhub/Eduhub/dotnetapp  # Adjust this path to your project directory
+          dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v3
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
         with:
-          dotnet-version: '6.0.x'
-              - name: Login to Azure
-              
-        - name: Login to Azure
-          uses: azure/login@v1
-          with:
-            creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Restore
-        run: dotnet restore ./Eduhub/Eduhub/dotnetapp/dotnetapp.sln
-        
-      - name: Build
-        run: dotnet build ./Eduhub/Eduhub/dotnetapp/dotnetapp.sln --configuration Release --no-restore
-        
-      - name: Publish
-        run: dotnet publish ./Eduhub/Eduhub/dotnetapp/dotnetapp.sln --configuration Release --no-build --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
-        
-      - name: Deployment
+          name: .net-app
+      
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-          package: "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
+          app-name: 'eduhubapp24'
+          slot-name: 'Production'
+          package: ${{ github.workspace }}/.net-app  # Adjust this path if needed
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6A692F5024F14A7DA789A33707C81DA4 }}
