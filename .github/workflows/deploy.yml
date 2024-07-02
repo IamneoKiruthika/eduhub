@@ -23,13 +23,13 @@ jobs:
           dotnet-version: '6.0.x'
           
       - name: Restore
-        run: dotnet restore ./dotnetapp.sln
+        run: dotnet restore ./Eduhub/Eduhub/dotnetapp/dotnetapp.sln
         
       - name: Build
-        run: dotnet build ./dotnetapp.sln --configuration Release --no-restore
+        run: dotnet build ./Eduhub/Eduhub/dotnetapp/dotnetapp.sln --configuration Release --no-restore
         
       - name: Publish
-        run: dotnet publish ./dotnetapp.sln --configuration Release --no-build --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
+        run: dotnet publish ./Eduhub/Eduhub/dotnetapp/dotnetapp.sln --configuration Release --no-build --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
         
       - name: Deployment
         uses: azure/webapps-deploy@v2
