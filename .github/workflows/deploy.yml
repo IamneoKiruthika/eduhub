@@ -21,7 +21,13 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '6.0.x'
-          
+              - name: Login to Azure
+              
+        - name: Login to Azure
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Restore
         run: dotnet restore ./Eduhub/Eduhub/dotnetapp/dotnetapp.sln
         
