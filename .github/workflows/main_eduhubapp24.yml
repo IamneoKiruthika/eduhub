@@ -20,7 +20,10 @@ jobs:
           include-prerelease: true
 
       - name: Restore dependencies
-        run: dotnet restore
+      
+        run: |
+          cd Eduhub/Eduhub/dotnetapp
+          dotnet restore
 
       - name: Build with dotnet
         run: |
