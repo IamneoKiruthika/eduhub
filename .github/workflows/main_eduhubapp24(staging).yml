@@ -1,9 +1,9 @@
-name: Deploy .NET Web API to Azure Web App
+name: Build and Deploy .NET App to Azure App Service
 
 on:
   push:
     branches:
-      - main
+      - main  # or your default branch
 
 jobs:
   build-and-deploy:
@@ -13,37 +13,53 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v3
+      # Set up .NET SDK
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: '7.x'  # Replace with your target .NET version
+          dotnet-version: '6.x'  # specify the .NET version to use .NET 6.x
 
-      - name: Change directory to project folder
-        working-directory: Eduhub/Eduhub/dotnetapp  # Adjust to the path where your .csproj file is located
+      # Restore .NET dependencies
+      - name: Restore .NET dependencies
         run: |
+          cd Eduhub/Eduhub/dotnetapp
           dotnet restore
-          dotnet build --configuration Release --no-restore
 
+      # Build .NET project
+      - name: Build .NET project
+        run: |
+          cd Eduhub/Eduhub/dotnetapp
+          dotnet build --configuration Release
+
+      # Publish .NET project
+      - name: Publish .NET project
+        run: |
+          cd Eduhub/Eduhub/dotnetapp
+          dotnet publish --configuration Release --output $(pwd)/publish
+
+      # Azure Login
       - name: Azure Login
-        id: azure_login
-        uses: azure/login@v2
+        uses: azure/login@v1
         with:
           creds: >
             {
               "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
+              "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
+              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
               "tenantId": "${{ secrets.AZURE_TENANT_ID }}",
-              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPITON_ID }}",
-              "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}"
+              "activeDirectoryEndpointUrl": "https://login.microsoftonline.com/",
+              "resourceManagerEndpointUrl": "https://management.azure.com/",
+              "activeDirectoryGraphResourceId": "https://graph.windows.net/",
+              "sqlManagementEndpointUrl": "https://management.core.windows.net:8443/",
+              "galleryEndpointUrl": "https://gallery.azure.com/",
+              "managementEndpointUrl": "https://management.core.windows.net/"
             }
 
-      - name: Publish
-        working-directory: Eduhub/Eduhub/dotnetapp  # Same directory as above
-        run: dotnet publish -c Release -o ${{ github.workspace }}/publish
-
-      - name: Deploy to Azure Web App
+      # Deploy to Azure App Service
+      - name: Azure Web App Deploy
         uses: azure/webapps-deploy@v2
         with:
-          app-name: eduhubapp24
-          slot-name: 'staging'
+          app-name: 'eduhubapp24'
+          slot-name: 'production'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ${{ github.workspace }}/publish
+          package: 'Eduhub/Eduhub/dotnetapp/publish'
