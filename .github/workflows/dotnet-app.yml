@@ -1,61 +1,70 @@
-name: Build and Deploy .NET App to Azure App Service
+name: Build and deploy ASP.Net Core app to Azure Web App - bendapp24
 
 on:
   push:
     branches:
-      - main  # or your default branch
+      - main
+  workflow_dispatch:
 
 jobs:
-  build-and-deploy-dotnet:
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: windows-latest
 
     steps:
-      # Step 1: Checkout code
+      # Checkout code
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      # Step 2: Set up .NET SDK
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v2
+      # Set up .NET Core SDK
+      - name: Set up .NET Core SDK
+        uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '6.x'  # specify the .NET version to use .NET 6.x
+          dotnet-version: '6.x'
 
-      # Step 3: Restore .NET dependencies
-      - name: Restore .NET dependencies
+      # Restore dependencies
+      - name: Restore dependencies
         run: |
           cd Eduhub/Eduhub/dotnetapp
           dotnet restore
 
-      # Step 4: Build .NET project
-      - name: Build .NET project
+      # Build with dotnet
+      - name: Build with dotnet
         run: |
           cd Eduhub/Eduhub/dotnetapp
           dotnet build --configuration Release
 
-      # Step 5: Publish .NET project
-      - name: Publish .NET project
+      # Publish artifact
+      - name: Publish artifact
         run: |
-          cd Eduhub/Eduhub/dotnetapp
-          dotnet publish --configuration Release --output $(pwd)/publish
+          cd Eduhub/dotnetapp
+          dotnet publish --configuration Release --output ../myapp
 
-      # Step 6: Azure Login
-      - name: Azure Login
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        run: |
-          echo "{\"clientId\":\"$AZURE_CLIENT_ID\",\"clientSecret\":\"$AZURE_CLIENT_SECRET\",\"subscriptionId\":\"$AZURE_SUBSCRIPTION_ID\",\"tenantId\":\"$AZURE_TENANT_ID\"}" > creds.json
+      # Upload artifact for deployment job
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v3
+        with:
+          name: dotnet-app
+          path: Eduhub/Eduhub/myapp
+
+      # Log in to Azure
+      - name: Log in to Azure
         uses: azure/login@v1
         with:
-          creds: ${{ steps.azure_login.outputs.creds }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Step 7: Deploy to Azure App Service
-      - name: Azure Web App Deploy
+      # Download artifact from build job
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: dotnet-app
+
+      # Deploy to Azure Web App
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: eduhubapp24  # Replace with your .NET app service name
-          slot-name: 'staging'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DOTNET }}
-          package: 'Eduhub/Eduhub/dotnetapp/publish'
+          app-name: 'eduhubapp24'
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: Eduhub/Eduhub/myapp
+
+   
